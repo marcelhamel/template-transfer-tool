@@ -49,7 +49,7 @@ controller.importFromSailthru = (req, res) => {
   })
   // Formats template data so API will accept it in a post call.
   .mapAF(templateData => {
-    console.log("Formatting ", templateData);
+    console.log("Formatting ", templateData.name);
     return Template.formatTemplate(templateData, includeTeams);
   })
   /*
@@ -57,7 +57,7 @@ controller.importFromSailthru = (req, res) => {
     Sailthru system. This tool only uses the contentHTML from that response.
   */
   .mapAF(async formattedTemplate => {
-    console.log("submitting ", formattedTemplate);
+    console.log("submitting ", formattedTemplate.name);
     const msg = await Sailthru.submitTemplate(formattedTemplate, src, dest)
     console.log("MESSAGE: ", msg)
     return msg;
