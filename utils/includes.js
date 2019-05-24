@@ -34,33 +34,34 @@ Includes.findAllInHTML = (str) => {
   to be posted. Appends "_import_copy" to name to avoid unintentionally overwriting
   includes. Need to add option to toggle this.
 */
-Includes.duplicateCheck = async (str, dest) => {
-  const response = await dest.apiGet('include', {'include': str}, (err, res) => {
-      Promise.resolve(res.content_html ? str + "_import_copy" : str);
+Includes.duplicateCheck = (include, dest) => {
+  return new Promise((resolve, reject) => {
+    dest.apiGet('include', {'include': include.name}, (err, res) => {
+      if (res.content_html) include.name = include.name + "_import_copy";
+      resolve(include);
     })
-
-  return response;
+  })
 };
 
 // Gets include from source account.
-Includes.getInclude = async (str, src) => {
-  console.log("include name: ", str);
-
-  const response = await src.apiGet('include', {include: str}, (err, res) => {
-    Promise.resolve(res.content_html ? res : '');
+Includes.getInclude = (str, src) => {
+  return new Promise((resolve, reject) => {
+    src.apiGet('include', {include: str}, (err, res) => {
+      resolve(res.content_html ? res : '');
+    })
   })
-
-  return response;
 };
 
 // Posts include to destination account.
-Includes.postInclude = async (include, dest) => {
-  const response = await dest.apiPost('include', {
-    include: include.name,
-    content_html: include.content_html
-  }, (post_err, post_res) => Promise.resolve('Do nothing.'));
-
-  return response;
+Includes.postInclude = (include, dest) => {
+  return new Promise((resolve, reject) => {
+    dest.apiPost('include', {
+      include: include.name,
+      content_html: include.content_html
+    }, (post_err, post_res) => {
+      resolve('Do nothing.')
+    });
+  })
 };
 
 module.exports = Includes;

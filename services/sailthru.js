@@ -49,8 +49,8 @@ Sailthru.submitTemplate = (template, src, dest) => {
       .then(async includes => {
         return (
           AAF(includes)
-          .mapAF(include => Includes.duplicateCheck(include, dest))
           .mapAF(name => Includes.getInclude(name, src))
+          .mapAF(include => Includes.duplicateCheck(include, dest))
           .mapAF(incData => Includes.postInclude(incData, dest))
           .then(() => resolve(`Successfully posted \"${template.name}\" to Sailthru.`))
           .catch(err => {
