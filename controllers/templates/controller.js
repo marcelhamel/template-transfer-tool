@@ -35,7 +35,6 @@ controller.getListFromSailthru = (req, res) => {
   them to destintation account.
 */
 controller.importFromSailthru = (req, res) => {
-  console.log("POSTING!")
   const src = client.createSailthruClient(req.body.src.apiKey, req.body.src.secret);
   const dest = client.createSailthruClient(req.body.dest.apiKey, req.body.dest.secret);
   const templatesToTransfer = req.body.list;
@@ -44,11 +43,13 @@ controller.importFromSailthru = (req, res) => {
   AAF(templatesToTransfer)
   // Make individual Template API calls for each template to get data.
   .mapAF(async template => {
+    console.log("Getting " + template + " from source.");
     const templateData = await Sailthru.getTemplate(template,src);
     return templateData;
   })
   // Formats template data so API will accept it in a post call.
   .mapAF(templateData => {
+    console.log("Formatting ", templateData);
     return Template.formatTemplate(templateData, includeTeams);
   })
   /*
@@ -56,6 +57,7 @@ controller.importFromSailthru = (req, res) => {
     Sailthru system. This tool only uses the contentHTML from that response.
   */
   .mapAF(async formattedTemplate => {
+    console.log("submitting ", formattedTemplate);
     const msg = await Sailthru.submitTemplate(formattedTemplate, src, dest)
     console.log("MESSAGE: ", msg)
     return msg;
