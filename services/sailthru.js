@@ -55,7 +55,7 @@ Sailthru.submitTemplate = (template, src, dest) => {
           .mapAF(name => Includes.getInclude(name, src))
           .mapAF(incData => Includes.postInclude(incData, dest))
           .then(() => resolve(`Successfully posted \"${template.name}\" to Sailthru.`))
-          .catch(err => err.message)
+          .catch(err => reject(err.message))
         )
       })
     })
