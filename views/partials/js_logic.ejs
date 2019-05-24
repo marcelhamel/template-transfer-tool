@@ -133,8 +133,7 @@
           showResponseModal();
         },
         error: function(err) {
-          console.log("ERROR: ", err);
-          console.log(parseResponseText(err.responseText));
+          console.log("ERROR: ", err.responseText);
           showErrorModal(parseResponseText(err.responseText));
         }
       })

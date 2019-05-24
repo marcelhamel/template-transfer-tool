@@ -35,6 +35,7 @@ controller.getListFromSailthru = (req, res) => {
   them to destintation account.
 */
 controller.importFromSailthru = (req, res) => {
+  console.log("POSTING!")
   const src = client.createSailthruClient(req.body.src.apiKey, req.body.src.secret);
   const dest = client.createSailthruClient(req.body.dest.apiKey, req.body.dest.secret);
   const templatesToTransfer = req.body.list;
