@@ -6,8 +6,12 @@ const app = express();
 const cors = require('cors');
 app.use(cors());
 
-// static asset config
-app.use(express.static(__dirname + "/dist"));
+// EJS as view engine
+app.set('view engine', 'ejs');
+
+// Set 'path' to use 'public' for static assets
+const path  = require('path');
+app.use(express.static(path.join(__dirname,'public')));
 
 // bodyParser config
 const bodyParser = require('body-parser');

@@ -4,39 +4,49 @@ const AAF = require('async-af');
 
 let Sailthru = {};
 
+/*
+  Gets complete list of templates in source account.
+*/
 Sailthru.getList = (config) => {
   const SRC = sailthruClient.createSailthruClient(config.apiKey, config.secret);
 
   return new Promise((resolve, reject) => {
     SRC.getTemplates((err, res) => {
-      if (err) reject(err);
+      if (res.errormsg) reject(res.errormsg);
 
       // Create list of template names
-      const templateList = res.templates.map(template => template.name);
-      templateList.length == 0 ? reject({errormsg: 'No templates found!'}) : resolve(templateList);
+      let templateList;
+      if (Array.isArray(res.templates)) {
+        templateList = res.templates.map(template => template.name);
+      }
+
+      templateList && templateList.length == 0 ? reject({errormsg: 'No templates found!'})
+                                               : resolve(templateList);
     })
   })
 };
 
 
+// Gets single template from source account.
 Sailthru.getTemplate = async (name, src) => {
   return new Promise((resolve, reject) => {
     src.getTemplate(name, (err, res) => {
-      if (err) throw Error(err.message);
+      if (err) throw Error(err);
+
       resolve(res);
     })
   })
 };
 
+// POST's template to destination account.
 Sailthru.submitTemplate = (template, src, dest) => {
   return new Promise((resolve, reject) => {
     dest.saveTemplate(template.name, template, (err, res) => {
-      if (err) throw Error(err.message);
-      if (res.errormsg) resolve(res.errormsg);
+      if (err) reject({ message: 'There has been an error uploading templates to Sailthru. Please check your API key and secret and try again.'});
 
 
       // Copies includes along with template
-      Includes.findAllInHTML(template.content_html)
+      Includes.findAllInHTML(template.content_html + " " + template.setup)
       .then(async includes => {
         return (
           AAF(includes)

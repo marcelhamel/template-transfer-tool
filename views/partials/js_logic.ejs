@@ -1,0 +1,186 @@
+<script>
+  $('document').ready(function() {
+
+    // GET Template List
+    $('#src_submit').click(function() {
+      var src_key = $('#src_key').val();
+      var src_secret = $('#src_secret').val();
+
+      $.ajax({
+        method: 'GET',
+        url: '/templates?apiKey=' + src_key + '&secret=' + src_secret,
+        dataType: 'json',
+        success: function(res) {
+          createTemplateList(res);
+        },
+        error: function(err) {
+          console.log(parseResponseText(err.responseText));
+          showErrorModal(parseResponseText(err.responseText));
+        }
+      })
+    })
+
+    // Close Error Modal
+    $('#close-modal').click(hideModal);
+
+    $('#dest_submit').click(function() {
+      submitTemplateList();
+    })
+  })
+
+
+  function createTemplateList(arr) {
+    var templateList = $('<div></div>')
+                        .attr({
+                          class: "pa3 overflow-y-scroll",
+                          id: "template-list"
+                        })
+                        .css({
+                          "height": "calc(100% - 50px)"
+                        })
+
+    $(arr).each(function(index, str) {
+      var checkbox =  $('<input></input>')
+                      .attr({
+                        type: 'checkbox',
+                        name: str,
+                        class: 'template-checkbox mr2'
+                      });
+
+      var label = $('<label></label>')
+                 .text(str)
+                 .prepend(checkbox);
+
+      var div = $('<div></div>')
+                .attr({
+                  class: "w-100 pa2 pv3"
+                })
+                .css({
+                  "background": index % 2 == 0 ? "#EFF0F1": "#FFFFFF"
+                })
+                .append(label);
+
+      $(templateList).append(div);
+    })
+
+    var selectAllDiv = $('<div></div>')
+                        .attr({
+                          class: 'w-100 flex justify-around'
+                        })
+                        .css({
+                          "height": "50px",
+                        })
+
+    var selectAllButton = $('<button></button>')
+                         .attr({
+                          id: 'select-all-btn',
+                          class: 'bg-sailthru mv1 button-reset pa2'
+                         })
+                         .text('SELECT ALL')
+                         .click(selectAll);
+
+    var deselectAllButton = $('<button></button>')
+                         .attr({
+                          id: 'deselect-all-btn',
+                          class: 'bg-sailthru mv1 button-reset pa2'
+                         })
+                         .text('DESELECT ALL')
+                         .click(deselectAll);
+
+    selectAllDiv = $(selectAllDiv).append(selectAllButton)
+                                  .append(deselectAllButton)
+
+    $("#template-list-container").html(templateList)
+                                 .append(selectAllDiv);
+  }
+
+  function submitTemplateList() {
+    var allCheckboxes = [].slice.call(document.querySelectorAll('.template-checkbox'));
+    var templatesToSubmit = allCheckboxes.filter(function(template) {
+          return template.checked == true;
+        })
+        .map(function(x) { return x.name });
+
+    if (templatesToSubmit.length == 0) {
+      showErrorModal("Please select templates to transfer!");
+      return;
+    }
+
+    showLoadingModal();
+
+    $.ajax({
+        method: 'POST',
+        url: '/templates',
+        data: {
+          list: templatesToSubmit,
+          src: {
+            apiKey: document.getElementById('src_key').value,
+            secret: document.getElementById('src_secret').value
+          },
+          dest: {
+            apiKey: document.getElementById('dest_key').value,
+            secret: document.getElementById('dest_secret').value
+          }
+        },
+        dataType: 'json',
+        success: function(res) {
+          console.log("RESPONSE: ", res);
+          $(res).each(function(ind, str) {
+            console.log(str);
+            var li = $("<li></li>").text(str)
+            $('#response-modal').append(li);
+          })
+          showResponseModal();
+        },
+        error: function(err) {
+          console.log(parseResponseText(err.responseText));
+          showErrorModal(parseResponseText(err.responseText));
+        }
+      })
+  }
+
+  function selectAll() {
+    var allCheckboxes = document.querySelectorAll(".template-checkbox");
+    allCheckboxes.forEach(function(el) {
+      el.checked = true;
+    })
+  }
+
+  function deselectAll() {
+    var allCheckboxes = document.querySelectorAll(".template-checkbox");
+    allCheckboxes.forEach(function(el) {
+      el.checked = false;
+    })
+  }
+
+  function parseResponseText(str) {
+    var startIndex = str.indexOf("<pre>") + 5;
+    var endIndex = str.indexOf("<br>");
+    return str.includes('<html>') ? str.substring(startIndex, endIndex) : "ERROR: " + str;
+  }
+
+  function showErrorModal(str) {
+    $('#error-modal').removeClass('no-display').text(str);
+    $('#modal-container').removeClass('no-display');
+    $('#loading-modal').addClass('no-display');
+  }
+
+  function showResponseModal(str) {
+    $('#response-modal').removeClass('no-display');
+    $("#close-modal").removeClass('no-display');
+    $('#loading-modal').addClass('no-display');
+  }
+
+  function hideModal() {
+    $('#error-modal').addClass('no-display').text('');
+    $('#response-modal').addClass('no-display').html('');
+    $('#modal-container').addClass('no-display');
+  }
+
+  function showLoadingModal() {
+    $('#loading-modal').removeClass('no-display');
+    $('#modal-container').removeClass('no-display');
+    $("#close-modal").addClass('no-display');
+  }
+
+</script>

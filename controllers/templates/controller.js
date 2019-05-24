@@ -15,14 +15,17 @@ controller.getListFromSailthru = (req, res) => {
     secret: req.query.secret
   }
 
+  if (!SailthruConfig.apiKey || !SailthruConfig.secret) {
+    throw Error('Please provide API valid key and secret.');
+  };
+
   Sailthru.getList(SailthruConfig)
   .then(list => {
     res.status(200).send(list)
   })
   // TO DO: Update error handling in UI.
   .catch(err => {
-    err.action = 'retrieving a template list from';
-    err.service = 'Sailthru';
+    console.log("ERROR: ", err)
     res.status(200).send(err);
   });
 }
@@ -58,7 +61,11 @@ controller.importFromSailthru = (req, res) => {
   })
   // Passes all success/error messages back to UI
   .then(allMessages => res.send(allMessages))
-  .catch(err => console.log("Error: ", err.message))
+  .catch(err => {
+
+    console.log("ERROR CATCH: ", err.message)
+    res.status(200).send(err.message ? err.message : err);
+  })
 };
 
 module.exports = controller;

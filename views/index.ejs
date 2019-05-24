@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Sailthru Template Transfer Tool</title>
+
+  <!-- jQuery -->
+  <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+
+  <!-- CSS links -->
+  <link rel="stylesheet" href="https://unpkg.com/tachyons@4.10.0/css/tachyons.min.css"/>
+  <link rel="stylesheet" href="https://use.typekit.net/cim5fjc.css" type="text/css" />
+  <link rel="stylesheet" href="/style.css"/>
+
+</head>
+<body class="aspect-ratio--object">
+  <nav class="w-100 flex justify-center items-center white bg-sailthru">
+    SAILTHRU TEMPLATE TRANSFER TOOL
+  </nav>
+  <main class="flex flex-row">
+    <section class="w-25 bg-black-05 h-100 pa3" id="acct-forms">
+      <div id="source_acct" class="mb4">
+        <h3 class="mv1">SOURCE ACCOUNT</h3>
+        <p class="mb1 mt3">API KEY</p>
+        <input type="text" id="src_key" class="w-100 pa1 input-reset">
+        <p class="mb1 mt3">API SECRET</p>
+        <input type="text" id="src_secret" class="w-100 pa1 input-reset mb3">
+        <button class="bg-sailthru mv1 button-reset pa2" id="src_submit">GET LIST</button>
+      </div>
+      <div id="dest_acct">
+        <h3 class="mv1">TARGET ACCOUNT</h3>
+        <p class="mb1 mt3">API KEY</p>
+        <input type="text" id="dest_key" class="w-100 pa1 input-reset">
+        <p class="mb1 mt3">API SECRET</p>
+        <input type="text" id="dest_secret" class="w-100 pa1 input-reset mb3">
+        <button class="bg-sailthru mv1 button-reset pa2" id="dest_submit">UPLOAD</button>
+      </div>
+    </section>
+    <section class="w-75 h-100 relative" id="template-list-container">
+      <div class="flex justify-center items-center h-100">
+        <p class="i black-50">Enter the API key and secret for your source account and click "GET LIST" to see a list of templates to import.</p>
+      </div>
+    </section>
+  </main>
+  <% include ./partials/js_logic %>
+  <% include ./partials/modals %>
+</body>
+</html>
