@@ -44,6 +44,8 @@ Includes.duplicateCheck = async (str, dest) => {
 
 // Gets include from source account.
 Includes.getInclude = async (str, src) => {
+  console.log("include name: ", str);
+
   const response = await src.apiGet('include', {include: str}, (err, res) => {
     Promise.resolve(res.content_html ? res : '');
   })

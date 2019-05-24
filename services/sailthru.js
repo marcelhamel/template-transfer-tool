@@ -52,15 +52,12 @@ Sailthru.submitTemplate = (template, src, dest) => {
         return (
           AAF(includes)
           .mapAF(include => Includes.duplicateCheck(include, dest))
-          .mapAF(name => {
-            console.log("Include name:" ,name);
-            return Includes.getInclude(name, src)
-          })
+          .mapAF(name => Includes.getInclude(name, src))
           .mapAF(incData => Includes.postInclude(incData, dest))
           .then(() => resolve(`Successfully posted \"${template.name}\" to Sailthru.`))
           .catch(err => {
-            console.log("ERROR submitting template: ", template.name, err)
-            reject(err)
+            console.log("ERROR submitting template: ", template.name, err.message)
+            resolve(`Unable to post \"${template.name}\" to Sailthru.`)
           })
         )
       })
