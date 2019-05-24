@@ -42,9 +42,7 @@ Sailthru.getTemplate = async (name, src) => {
 Sailthru.submitTemplate = (template, src, dest) => {
   return new Promise((resolve, reject) => {
     dest.saveTemplate(template.name, template, (err, res) => {
-      if (res.errormsg)  console.log("RES.ERRORMSG: ", res.errormsg);
       if (err) reject({ message: 'There has been an error uploading templates to Sailthru. Please check your API key and secret and try again.'});
-      console.log("Submission response: ", res.name);
 
       // Copies includes along with template
       Includes.findAllInHTML(template.content_html + " " + template.setup)
@@ -56,7 +54,6 @@ Sailthru.submitTemplate = (template, src, dest) => {
           .mapAF(incData => Includes.postInclude(incData, dest))
           .then(() => resolve(`Successfully posted \"${template.name}\" to Sailthru.`))
           .catch(err => {
-            console.log("ERROR submitting template: ", template.name, err.message)
             resolve(`Unable to post \"${template.name}\" to Sailthru.`)
           })
         )

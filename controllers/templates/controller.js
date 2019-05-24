@@ -25,7 +25,6 @@ controller.getListFromSailthru = (req, res) => {
   })
   // TO DO: Update error handling in UI.
   .catch(err => {
-    console.log("ERROR: ", err)
     res.status(200).send(err);
   });
 }
@@ -43,30 +42,31 @@ controller.importFromSailthru = (req, res) => {
   AAF(templatesToTransfer)
   // Make individual Template API calls for each template to get data.
   .mapAF(async template => {
-    console.log("Getting " + template + " from source.");
     const templateData = await Sailthru.getTemplate(template,src);
     return templateData;
   })
+
+
   // Formats template data so API will accept it in a post call.
   .mapAF(templateData => {
-    console.log("Formatting ", templateData.name);
     return Template.formatTemplate(templateData, includeTeams);
   })
+
+
   /*
     Post formatted Template to Sailthru. POST call returns complete Template object from
     Sailthru system. This tool only uses the contentHTML from that response.
   */
   .mapAF(async formattedTemplate => {
-    console.log("submitting ", formattedTemplate.name);
     const msg = await Sailthru.submitTemplate(formattedTemplate, src, dest)
     console.log("MESSAGE: ", msg)
     return msg;
   })
+
+
   // Passes all success/error messages back to UI
   .then(allMessages => res.send(allMessages))
   .catch(err => {
-
-    console.log("ERROR CATCH: ", err.message)
     res.status(200).send(err.message ? err.message : err);
   })
 };
