@@ -42,6 +42,7 @@ Sailthru.getTemplate = async (name, src) => {
 Sailthru.submitTemplate = (template, src, dest) => {
   return new Promise((resolve, reject) => {
     dest.saveTemplate(template.name, template, (err, res) => {
+      if (res.errormsg)  console.log("RES.ERRORMSG: ", res.errormsg);
       if (err) reject({ message: 'There has been an error uploading templates to Sailthru. Please check your API key and secret and try again.'});
 
 
