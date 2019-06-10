@@ -28,10 +28,10 @@ Sailthru.getList = (config) => {
 
 
 // Gets single template from source account.
-Sailthru.getTemplate = async (name, src) => {
+Sailthru.getTemplate = (name, src) => {
   return new Promise((resolve, reject) => {
     src.getTemplate(name, (err, res) => {
-      if (err) throw Error(err);
+      if (res.errormsg) reject(res.errormsg);
 
       resolve(res);
     })
@@ -46,7 +46,7 @@ Sailthru.submitTemplate = (template, src, dest) => {
 
       // Copies includes along with template
       Includes.findAllInHTML(template.content_html + " " + template.setup)
-      .then(async includes => {
+      .then(includes => {
         return (
           AAF(includes)
           .mapAF(name => Includes.getInclude(name, src))
