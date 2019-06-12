@@ -1,6 +1,6 @@
 const client = require('sailthru-client');
-const Sailthru = require('../../services/sailthru');
-const Template = require('../../utils/template');
+const Sailthru = require('../services/sailthru');
+const Template = require('../utils/template');
 const AAF = require('async-af');
 
 let controller = {};
