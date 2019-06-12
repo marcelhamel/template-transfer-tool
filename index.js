@@ -6,9 +6,6 @@ const app = express();
 const cors = require('cors');
 app.use(cors());
 
-// EJS as view engine
-app.set('view engine', 'ejs');
-
 // Set 'path' to use 'public' for static assets
 const path  = require('path');
 app.use(express.static(path.join(__dirname,'public')));

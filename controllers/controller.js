@@ -23,9 +23,8 @@ controller.getListFromSailthru = (req, res) => {
   .then(list => {
     res.status(200).send(list)
   })
-  // TO DO: Update error handling in UI.
   .catch(err => {
-    res.status(200).send(err);
+    res.status(200).send(err.errormsg);
   });
 }
 
