@@ -1,3 +1,6 @@
+/*
+  Contains all API calls made to Sailthru.
+*/
 const sailthruClient = require('sailthru-client');
 const Includes = require('../utils/includes');
 const AAF = require('async-af');
@@ -27,7 +30,9 @@ Sailthru.getList = (config) => {
 };
 
 
-// Gets single template from source account.
+/*
+ Gets single template from source account.
+*/
 Sailthru.getTemplate = (name, src) => {
   return new Promise((resolve, reject) => {
     src.getTemplate(name, (err, res) => {
@@ -38,7 +43,10 @@ Sailthru.getTemplate = (name, src) => {
   })
 };
 
-// POST's template to destination account.
+/*
+  Posts template to destination account. Also runs through scraping process for includes associated with template.
+  For includes see utils/includes.js
+*/
 Sailthru.submitTemplate = (template, src, dest) => {
   return new Promise((resolve, reject) => {
     dest.saveTemplate(template.name, template, (err, res) => {

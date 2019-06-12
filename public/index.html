@@ -11,6 +11,8 @@
   src="https://code.jquery.com/jquery-3.2.1.min.js"
   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
   crossorigin="anonymous"></script>
+  <!-- Page logic -->
+  <script src="/app.js"></script>
 
   <!-- CSS links -->
   <link rel="stylesheet" href="https://unpkg.com/tachyons@4.10.0/css/tachyons.min.css"/>
@@ -23,7 +25,11 @@
     SAILTHRU TEMPLATE TRANSFER TOOL
   </nav>
   <main class="flex flex-row">
+
+    <!-- BEGIN Credentials "form" -->
     <section class="w-25 bg-black-05 h-100 pa3" id="acct-forms">
+
+      <!-- BEGIN Source Account Config -->
       <div id="source_acct" class="mb4">
         <h3 class="mv1">SOURCE ACCOUNT</h3>
         <p class="mb1 mt3">API KEY</p>
@@ -32,6 +38,8 @@
         <input type="text" id="src_secret" class="w-100 pa1 input-reset mb3">
         <button class="bg-sailthru mv1 button-reset pa2" id="src_submit">GET LIST</button>
       </div>
+      <!-- END Source Account Config -->
+      <!-- BEGIN Target Account Config -->
       <div id="dest_acct">
         <h3 class="mv1">TARGET ACCOUNT</h3>
         <p class="mb1 mt3">API KEY</p>
@@ -40,14 +48,31 @@
         <input type="text" id="dest_secret" class="w-100 pa1 input-reset mb3">
         <button class="bg-sailthru mv1 button-reset pa2" id="dest_submit">UPLOAD</button>
       </div>
+      <!-- END Target Account Config -->
+
     </section>
+    <!-- END Credentials "form" -->
+
     <section class="w-75 h-100 relative" id="template-list-container">
       <div class="flex justify-center items-center h-100">
         <p class="i black-50">Enter the API key and secret for your source account and click "GET LIST" to see a list of templates to import.</p>
       </div>
     </section>
   </main>
-  <% include ./partials/js_logic %>
-  <% include ./partials/modals %>
+
+  <!-- BEGIN Modals -->
+  <div class="aspect-ratio--object bg-black-50 flex justify-center items-center no-display" id="modal-container">
+    <div class="h-50 w-50 bg-white flex justify-center items-center relative tc" id="modal-content-container">
+      <div id="close-modal" class="absolute top-0 right-1 f1 pointer">&times;</div>
+      <div id="error-modal" class="no-display"></div>
+      <div id="response-modal" class="no-display w-100 pa3 pr5 h-100 overflow-y-scroll tl"></div>
+      <div id="loading-modal" class="flex w-100 flex-column justify-around pa5 no-display">
+        <img src="/sailboat.svg" style="height: 50%;" />
+        <p>Transferring templates to Sailthru...</p>
+      </div>
+    </div>
+  </div>
+  <!-- END Modals -->
+
 </body>
 </html>
