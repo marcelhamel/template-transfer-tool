@@ -4,9 +4,15 @@ This tool is designed to transfer email templates and their associated includes 
 
 # DISCLAIMER
 
-**This code is intended as an example of how client developers can re-create their own hosted version of a template-copying app. It is not intended to be used as-is, but can easily be replicated on customer servers. As such, Sailthru is not responsible for maintaining any instances of this hosted by users outside of the CM Group organization.**
+**This code is intended as an example of how client developers can re-create their own hosted version of a template-copying app. It is not intended to be used as-is, but can easily be replicated on customer servers. This is not an official support tool and as such, Sailthru is not responsible for maintaining, nor can it provide support for, any instances of this hosted by users outside of the CM Group organization.**
+
+### Considerations
 
 Please be advised that certain template attributes are not transferred by this tool and will need to be configured in the target account. See **utils/template.js** for details.
+
+Templates in the target account will be overwritten by any imported template with the same name. E.g, importing a template named "Example Template" will overwrite any other template named "Example Template" in the target account.
+
+Includes will not be overwritten, but will instead have "\_import\_copy" appended to their names. E.g. if your target account has an included titled "Example Include", any include with the same name will be imported as "Example Include\_import\_copy".
 
 ### How It Works
 
