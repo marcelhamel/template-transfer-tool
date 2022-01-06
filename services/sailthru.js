@@ -58,7 +58,8 @@ Sailthru.submitTemplate = (template, src, dest) => {
         return (
           AAF(includes)
           .mapAF(name => Includes.getInclude(name, src))
-          .mapAF(include => Includes.duplicateCheck(include, dest))
+          // Commenting out to force overwrite of includes. No one uses this. Fix later.
+          // .mapAF(include => Includes.duplicateCheck(include, dest))
           .mapAF(incData => Includes.postInclude(incData, dest))
           .then(() => resolve(`Successfully posted \"${template.name}\" to Sailthru.`))
           .catch(err => {
