@@ -1,67 +1,66 @@
-let Includes = {};
+const { getInclude, postInclude, listIncludes } = require('../services/sailthru');
 
-// Scrapes all instances of Zephyr's "include" command out of an HTML string.
-Includes.findAllInHTML = (str) => {
-  return new Promise((resolve, reject) => {
-    let startIndex = 0, index, str_delim, includes = [];
+const Includes = {
+  // Scrapes all instances of Zephyr's "include" command out of an HTML string.
+  findIncludes: (str) => {
     try {
-      while ((index = str.indexOf('include', startIndex)) > -1) {
-        index += 7;
-        let single_quot_delim = str.indexOf("'", index);
-        let double_quot_delim = str.indexOf('"', index);
-        if (single_quot_delim === -1) {
-          str_delim = '"';
-        } else if (double_quot_delim === -1) {
-          str_delim = "'";
-        } else {
-          str_delim = single_quot_delim < double_quot_delim ? "'" : '"';
-        }
-        let open_quote = str.indexOf(str_delim, index) + 1;
-        let close_quote = str.indexOf(str_delim, open_quote);
-        includes.push(str.substring(open_quote,close_quote))
-        startIndex = close_quote;
-      }
-      resolve(includes);
-    } catch(err) {
-      resolve(['']);
+      return [...str.match(/(?<={include ["']).*(?=["']})/g)];
+    } catch(e) {
+      return [];
     }
-  })
-};
+  },
 
+  /*
+    This builds a map of includes between both accounts and diffs the strings where necessary to make sure we only post what's necessary.
+    Posting includes at a high volume tends to leads to duplication errors within the API. This SHOULD be fixed internally but since
+    I don't work on that part of the platform I can't say when it will happen.
+  */
+  processIncludes: (includes, src, dest) => {
+    return new Promise((resolve, reject) => {
+      let includeMap, postResponses;
 
-/*
-  Checks destination account for existence of include with same name as one
-  to be posted. Appends "_import_copy" to name to avoid unintentionally overwriting
-  includes. Need to add option to toggle this.
-*/
-Includes.duplicateCheck = (include, dest) => {
-  return new Promise((resolve, reject) => {
-    dest.apiGet('include', {'include': include.name}, (err, res) => {
-      if (res.content_html) include.name = include.name + "_import_copy";
-      resolve(include);
-    })
-  })
-};
+      // 1. Get all includes from source.
+      Promise.all(includes.map(x => getInclude(x, src)))
+      // 2. Convert array response to object then get includes from destination
+      .then(sourceData => {
+        includeMap = sourceData.reduce((obj, x) => ({...obj, [x.name]: { src: x.content_html, write: true }}), {});
+        console.log(`Mapped ${Object.keys(includeMap).length} includes from source. Listing those in destination account...`);
+        return listIncludes(dest)
+      // 3. Complete building map and then attempt to figure out what needs to be transferred.
+      }).then(destResponse => {
+        destResponse.includes.forEach(x => { if (includeMap[x.name]) includeMap[x.name]['write'] = false });
 
-// Gets include from source account.
-Includes.getInclude = (str, src) => {
-  return new Promise((resolve, reject) => {
-    src.apiGet('include', {include: str}, (err, res) => {
-      resolve(res.content_html ? res : '');
-    })
-  })
-};
+        const incToDiff = Object.keys(includeMap).filter(x => includeMap[x]['write'] === false);
+        return Promise.all(incToDiff.map(x => getInclude(x, dest)));
+      }).then(destIncludes => {
+        // Figure out what needs to be written, if anything.
+        destIncludes.forEach(x => includeMap[x.name]['dest'] = x.content_html);
+        for (const key in includeMap) {
+          const srcHTML = includeMap[key]['src'];
+          const destHTML = includeMap[key]['dest'];
+          if (!!destHTML && srcHTML !== destHTML) {
+            includeMap[key]['write'] = true;
+          }
+        };
 
-// Posts include to destination account.
-Includes.postInclude = (include, dest) => {
-  return new Promise((resolve, reject) => {
-    dest.apiPost('include', {
-      include: include.name,
-      content_html: include.content_html
-    }, (post_err, post_res) => {
-      resolve('Do nothing.')
+        const includesToWrite = Object.keys(includeMap).filter(x => includeMap[x]['write'] === true);
+
+        console.log(`${includesToWrite.length} includes need to be written. Sit tight!`);
+        if (includesToWrite.length === 0) {
+          return [];
+        } else {
+          return Promise.all(includesToWrite.map(x => postInclude({ name: x, content_html: includeMap[x]['src']}, dest)))
+        }
+      }).then(resp => {
+        postResponses = resp.length > 0 ? resp.map(x => `Posted ${x.name} to Sailthru.`) : ['No includes to post!'];
+        resolve(postResponses);
+      })
+      .catch(err => {
+        console.log('Error: ', err);
+        reject(err)
+      });
     });
-  })
+  }
 };
 
 module.exports = Includes;

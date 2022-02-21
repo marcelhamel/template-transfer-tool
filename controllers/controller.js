@@ -1,6 +1,7 @@
 const client = require('sailthru-client');
-const Sailthru = require('../services/sailthru');
-const Template = require('../utils/template');
+const { getTemplateList, getTemplate, submitTemplate } = require('../services/sailthru');
+const { formatTemplate } = require('../utils/template');
+const { findIncludes, processIncludes } = require('../utils/includes');
 const AAF = require('async-af');
 
 let controller = {};
@@ -10,22 +11,14 @@ let controller = {};
   Gets a list of all templates in Sailthru source account.
 */
 controller.getListFromSailthru = (req, res) => {
-  const SailthruConfig = {
-    apiKey: req.query.apiKey,
-    secret: req.query.secret
-  }
+  const apiKey = req.query.apiKey;
+  const secret = req.query.secret;
 
-  if (!SailthruConfig.apiKey || !SailthruConfig.secret) {
-    throw Error('Please provide API valid key and secret.');
-  };
+  if (!apiKey || !secret) throw Error('Please provide API valid key and secret.');
 
-  Sailthru.getList(SailthruConfig)
-  .then(list => {
-    res.status(200).send(list)
-  })
-  .catch(err => {
-    res.status(200).send(err.errormsg);
-  });
+  getTemplateList({ apiKey, secret })
+  .then(list => res.status(200).send(list))
+  .catch(err => res.status(200).send(err.errormsg));
 }
 
 /*
@@ -36,37 +29,33 @@ controller.importFromSailthru = (req, res) => {
   const src = client.createSailthruClient(req.body.src.apiKey, req.body.src.secret);
   const dest = client.createSailthruClient(req.body.dest.apiKey, req.body.dest.secret);
   const templatesToTransfer = req.body.list;
-  const includeTeams = req.body.include_teams;
+  const keepFromEmails = req.body.keep_from_emails === "true" ? true : false;
 
-  AAF(templatesToTransfer)
-  // Make individual Template API calls for each template to get data.
-  .mapAF(async template => {
-    const templateData = await Sailthru.getTemplate(template,src);
-    return templateData;
+  let includes, responseMessages;
+
+  Promise.all(templatesToTransfer.map(x => getTemplate(x,src)))
+  .then(templateData => {
+    console.log('keepFromEmails ', keepFromEmails);
+    const formattedTemplates = templateData.map(x => formatTemplate(x, keepFromEmails));
+    // Scrape out includes here and assign to includes array...
+    const allIncludes = formattedTemplates.map(x => findIncludes(x.content_html)).flat(2);
+    includes = [...new Set(allIncludes)];
+
+    return Promise.all(formattedTemplates.map(x => submitTemplate(x, dest)));
   })
-
-
-  // Formats template data so API will accept it in a post call.
-  .mapAF(templateData => {
-    return Template.formatTemplate(templateData, includeTeams);
+  .then(async (templateMessages) => {
+    responseMessages = templateMessages.map(x => {
+      console.log("response: ", x);
+      return x.errormsg ? `Error posting to Sailthru: ${x.errormsg}` : `Sucessfully posted ${x.name} to Sailthru.`
+    });
+    // Go find and diff all includes here. Tomorrow. You can fix this tomorrow.
+    const includeResponses = await processIncludes(includes, src, dest);
+    responseMessages = responseMessages.concat(includeResponses);
+    res.status(200).send(responseMessages);
   })
-
-
-  /*
-    Post formatted Template to Sailthru. POST call returns complete Template object from
-    Sailthru system. This tool only uses the contentHTML from that response.
-  */
-  .mapAF(async formattedTemplate => {
-    const msg = await Sailthru.submitTemplate(formattedTemplate, src, dest)
-    console.log("MESSAGE: ", msg)
-    return msg;
-  })
-
-
-  // Passes all success/error messages back to UI
-  .then(allMessages => res.send(allMessages))
   .catch(err => {
-    res.status(200).send(err.message ? err.message : err);
+    console.log("ERROR IN CONTROLLER: ", err);
+    res.status(200).send(err.message ? err.message : err)
   })
 };
 

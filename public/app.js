@@ -121,7 +121,8 @@ function submitTemplateList() {
         dest: {
           apiKey: document.getElementById('dest_key').value,
           secret: document.getElementById('dest_secret').value
-        }
+        },
+        keep_from_emails: document.getElementById('from_emails').checked
       },
       dataType: 'json',
       success: function(res) {
@@ -168,6 +169,7 @@ function showErrorModal(str) {
   $('#error-modal').removeClass('no-display').text(str);
   $('#modal-container').removeClass('no-display');
   $('#loading-modal').addClass('no-display');
+  $("#close-modal").removeClass('no-display');
 }
 
 // Display response modal after submitting template list for transfer.
