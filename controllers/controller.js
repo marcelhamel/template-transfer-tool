@@ -35,7 +35,6 @@ controller.importFromSailthru = (req, res) => {
 
   Promise.all(templatesToTransfer.map(x => getTemplate(x,src)))
   .then(templateData => {
-    console.log('keepFromEmails ', keepFromEmails);
     const formattedTemplates = templateData.map(x => formatTemplate(x, keepFromEmails));
     // Scrape out includes here and assign to includes array...
     const allIncludes = formattedTemplates.map(x => findIncludes(x.content_html)).flat(2);

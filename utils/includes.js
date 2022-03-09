@@ -23,14 +23,14 @@ const Includes = {
       Promise.all(includes.map(x => getInclude(x, src)))
       // 2. Convert array response to object then get includes from destination
       .then(sourceData => {
-        includeMap = sourceData.reduce((obj, x) => ({...obj, [x.name]: { src: x.content_html, write: true }}), {});
+        includeMap = sourceData.reduce((obj, x) => ({...obj, [x.name]: { src: x.content_html, write: true, msg: null }}), {});
         console.log(`Mapped ${Object.keys(includeMap).length} includes from source. Listing those in destination account...`);
         return listIncludes(dest)
       // 3. Complete building map and then attempt to figure out what needs to be transferred.
       }).then(destResponse => {
         destResponse.includes.forEach(x => { if (includeMap[x.name]) includeMap[x.name]['write'] = false });
-
         const incToDiff = Object.keys(includeMap).filter(x => includeMap[x]['write'] === false);
+        console.log(`Running diff on ${incToDiff.length} includes...`);
         return Promise.all(incToDiff.map(x => getInclude(x, dest)));
       }).then(destIncludes => {
         // Figure out what needs to be written, if anything.
@@ -40,6 +40,7 @@ const Includes = {
           const destHTML = includeMap[key]['dest'];
           if (!!destHTML && srcHTML !== destHTML) {
             includeMap[key]['write'] = true;
+
           }
         };
 
