@@ -17,7 +17,9 @@ module.exports = {
     // Safety against clients sending with wrong data feed.
     delete template.data_feed_url;
     // Will throw internal exception
-    delete template.promotion_id
+    delete template.promotion_id;
+    // Template ID will throw error in new account
+    delete template.template_id;
 
     // Will throw error if team does not exist in both accounts.
     // if (!include_teams) {
