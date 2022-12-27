@@ -4,7 +4,7 @@ const Includes = {
   // Scrapes all instances of Zephyr's "include" command out of an HTML string.
   findIncludes: (str) => {
     try {
-      return [...str.match(/(?<={include ["']).*(?=["']})/g)];
+      return [...str.match(/(?<={include ["'])[^"']+(?=["']})/g)];
     } catch(e) {
       return [];
     }
@@ -23,7 +23,15 @@ const Includes = {
       Promise.all(includes.map(x => getInclude(x, src)))
       // 2. Convert array response to object then get includes from destination
       .then(sourceData => {
-        includeMap = sourceData.reduce((obj, x) => ({...obj, [x.name]: { src: x.content_html, write: true, msg: null }}), {});
+        const validIncludes = sourceData.filter(x => {
+          if(x.error) {
+            console.log(x.errormsg);
+            return false;
+          } else {
+            return true;
+          }
+        });
+        includeMap = validIncludes.reduce((obj, x) => ({...obj, [x.name]: { src: x.content_html, write: true, msg: null }}), {});
         console.log(`Mapped ${Object.keys(includeMap).length} includes from source. Listing those in destination account...`);
         return listIncludes(dest)
       // 3. Complete building map and then attempt to figure out what needs to be transferred.
