@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 // Resources
 app.use(require('./resources.js'));
 
-const PORT = process.env.PORT || 8000
+const PORT = process.env.PORT || 443;
 
 // Listen for environment port or default to 8000
 app.listen(PORT, () => console.log('Server is listening on port ', PORT));
